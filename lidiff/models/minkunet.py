@@ -11,6 +11,7 @@ __all__ = ['MinkUNetDiff']
 
 
 class BasicConvolutionBlock(nn.Module):
+    # * 基础卷积块，由卷积层，batch归一层与激活函数relu组成
     def __init__(self, inc, outc, ks=3, stride=1, dilation=1, D=3):
         super().__init__()
         self.net = nn.Sequential(
@@ -30,6 +31,7 @@ class BasicConvolutionBlock(nn.Module):
 
 
 class BasicDeconvolutionBlock(nn.Module):
+    # * 反卷积
     def __init__(self, inc, outc, ks=3, stride=1, D=3):
         super().__init__()
         self.net = nn.Sequential(
@@ -47,6 +49,7 @@ class BasicDeconvolutionBlock(nn.Module):
 
 
 class ResidualBlock(nn.Module):
+    # * 残差块
     def __init__(self, inc, outc, ks=3, stride=1, dilation=1, D=3):
         super().__init__()
         self.net = nn.Sequential(

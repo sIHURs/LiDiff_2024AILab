@@ -18,7 +18,7 @@ from diffusers import DPMSolverMultistepScheduler
 class DiffusionPoints(LightningModule):
     def __init__(self, hparams:dict, data_module: LightningDataModule = None):
         super().__init__()
-        self.save_hyperparameters(hparams)
+        self.save_hyperparameters(hparams) # 用于保存模型的超参数到 TensorBoard 日志文件中，以便后续分析和比较不同模型的性能。
         self.data_module = data_module
 
         # alphas and betas
