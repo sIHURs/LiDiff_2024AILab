@@ -34,6 +34,8 @@ class DiffusionPoints(LightningModule):
         self.t_steps = self.hparams['diff']['t_steps']
         self.s_steps = self.hparams['diff']['s_steps']
         self.alphas = 1. - self.betas
+        
+        # alpha bar
         self.alphas_cumprod = torch.tensor(
             np.cumprod(self.alphas, axis=0), dtype=torch.float32, device=torch.device('cuda')
         )
@@ -47,16 +49,16 @@ class DiffusionPoints(LightningModule):
 
         self.sqrt_alphas_cumprod = torch.sqrt(self.alphas_cumprod)
         self.sqrt_one_minus_alphas_cumprod = torch.sqrt(1. - self.alphas_cumprod)
-        self.log_one_minus_alphas_cumprod = torch.log(1. - self.alphas_cumprod) 
+        self.log_one_minus_alphas_cumprod = torch.log(1. - self.alphas_cumprod)  # ! not used ?
         self.sqrt_recip_alphas = torch.sqrt(1. / self.alphas)
         self.sqrt_recip_alphas_cumprod = torch.sqrt(1. / self.alphas_cumprod)
         self.sqrt_recipm1_alphas_cumprod = torch.sqrt(1. / self.alphas_cumprod - 1.)
 
-        self.posterior_variance = self.betas * (1. - self.alphas_cumprod_prev) / (1. - self.alphas_cumprod)
-        self.sqrt_posterior_variance = torch.sqrt(self.posterior_variance)
+        self.posterior_variance = self.betas * (1. - self.alphas_cumprod_prev) / (1. - self.alphas_cumprod) # !
+        self.sqrt_posterior_variance = torch.sqrt(self.posterior_variance) # ! not used?
         self.posterior_log_var = torch.log(
             torch.max(self.posterior_variance, 1e-20 * torch.ones_like(self.posterior_variance))
-        )
+        ) # ! not used?
 
         self.posterior_mean_coef1 = self.betas * torch.sqrt(self.alphas_cumprod_prev) / (1. - self.alphas_cumprod)
         self.posterior_mean_coef2 = (1. - self.alphas_cumprod_prev) * torch.sqrt(self.alphas) / (1. - self.alphas_cumprod)
@@ -136,7 +138,7 @@ class DiffusionPoints(LightningModule):
         for t in tqdm(range(len(self.dpm_scheduler.timesteps))):
             t = torch.ones(gt_pts.shape[0]).cuda().long() * self.dpm_scheduler.timesteps[t].cuda()
             
-            noise_t = self.classfree_forward(x_t, x_cond, x_uncond, t)
+            noise_t = self.classfree_forward(x_t, x_cond, x_uncond, t) # predict
             input_noise = x_t.F.reshape(t.shape[0],-1,3) - x_init
             x_t = x_init + self.dpm_scheduler.step(noise_t, t[0], input_noise)['prev_sample']
             x_t = self.points_to_tensor(x_t, x_mean, x_std)
@@ -185,7 +187,7 @@ class DiffusionPoints(LightningModule):
         # sample step t
         t = torch.randint(0, self.t_steps, size=(batch['pcd_full'].shape[0],)).cuda()
         # sample q at step t
-        # we sample noise towards zero to then add to each point the noise (without normalizing the pcd)
+        # !!! we sample noise towards zero to then add to each point the noise (without normalizing the pcd)
         t_sample = batch['pcd_full'] + self.q_sample(torch.zeros_like(batch['pcd_full']), t, noise)
 
         # replace the original points with the noise sampled
