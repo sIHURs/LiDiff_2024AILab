@@ -104,7 +104,7 @@ class DiffusionPoints(LightningModule):
 
         return x_uncond + self.w_uncond * (x_cond - x_uncond)
 
-    def visualize_step_t(self, x_t, gt_pts, pcd, pcd_mean, pcd_std, pidx=0):
+    def visualize_step_t(self, x_t, gt_pts, pcd, pcd_mean, pcd_std, pidx=0): # ! not used?
         points = x_t.F.detach().cpu().numpy()
         points = points.reshape(gt_pts.shape[0],-1,3)
         obj_mean = pcd_mean[pidx][0].detach().cpu().numpy()
@@ -123,6 +123,7 @@ class DiffusionPoints(LightningModule):
         colors[-len(gt_pts[0]):] = [.3,1.,.3]
         pcd.colors = o3d.utility.Vector3dVector(colors[dist_idx])
 
+    # ???
     def reset_partial_pcd(self, x_part, x_uncond, x_mean, x_std):
         x_part = self.points_to_tensor(x_part.F.reshape(x_mean.shape[0],-1,3).detach(), x_mean, x_std)
         x_uncond = self.points_to_tensor(
@@ -136,10 +137,12 @@ class DiffusionPoints(LightningModule):
         self.scheduler_to_cuda()
 
         for t in tqdm(range(len(self.dpm_scheduler.timesteps))):
-            t = torch.ones(gt_pts.shape[0]).cuda().long() * self.dpm_scheduler.timesteps[t].cuda()
+            # sample timestep t
+            t = torch.ones(gt_pts.shape[0]).cuda().long() * self.dpm_scheduler.timesteps[t].cuda() 
             
-            noise_t = self.classfree_forward(x_t, x_cond, x_uncond, t) # predict
+            noise_t = self.classfree_forward(x_t, x_cond, x_uncond, t) # predicted noise
             input_noise = x_t.F.reshape(t.shape[0],-1,3) - x_init
+            # ! Local point denoising
             x_t = x_init + self.dpm_scheduler.step(noise_t, t[0], input_noise)['prev_sample']
             x_t = self.points_to_tensor(x_t, x_mean, x_std)
 
@@ -239,6 +242,7 @@ class DiffusionPoints(LightningModule):
             x_gen_eval = self.p_sample_loop(x_init, x_full, x_part, x_uncond, gt_pts, batch['mean'], batch['std'])
             x_gen_eval = x_gen_eval.F.reshape((gt_pts.shape[0],-1,3))
 
+            # visualization
             for i in range(len(batch['pcd_full'])):
                 pcd_pred = o3d.geometry.PointCloud()
                 c_pred = x_gen_eval[i].cpu().detach().numpy()
