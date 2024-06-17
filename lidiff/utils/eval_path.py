@@ -77,6 +77,7 @@ def main(path, voxel_size, max_range, ckpt_path, diff):
     jsd_bev = []
 
     for pose, scan_path in tqdm.tqdm(list(zip(poses, natsorted(os.listdir(f'{PATH_DATA}/velodyne'))))):
+        # * 这里应该是做推断，输出pred
         pcd_pred, cur_scan = get_scan_completion(scan_path, path, diff_completion, max_range)
         pcd_gt = get_ground_truth(pose, cur_scan, seq_map, max_range)
 

@@ -12,6 +12,7 @@ def histogram_point_cloud(pcd, resolution, max_range, bev=False):
 
     return np.clip(hist[0], a_min=0., a_max=1.) if bev else hist[0]
 
+# Jensen-Shannon Divergence (JSD)
 def compute_jsd(hist_gt, hist_pred, bev=False, visualize=False):
     bev_gt = hist_gt.sum(-1) if bev else hist_gt
     norm_bev_gt = bev_gt / bev_gt.sum()

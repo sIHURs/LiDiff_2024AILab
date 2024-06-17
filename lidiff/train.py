@@ -76,6 +76,7 @@ def main(config, weights, checkpoint, test):
     data = datasets.dataloaders[cfg['data']['dataloader']](cfg)
 
     #Add callbacks
+    # * 这个监视器将在每个训练步骤记录学习率（Learning Rate）
     lr_monitor = LearningRateMonitor(logging_interval='step')
     checkpoint_saver = ModelCheckpoint(
                                  filename=cfg['experiment']['id']+'_{epoch:02d}',

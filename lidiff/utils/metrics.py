@@ -7,9 +7,11 @@ TETRATYPE = 10
 PCDTYPE = 1
 
 class Metrics3D():
+    # ! 判断输入的数据是否是MESH，TETRA或者PCD，np，tensor。并判断是否为空
     def prediction_is_empty(self, geom):
 
         if isinstance(geom, o3d.geometry.Geometry):
+            # ! 如果输入的参数是一个Geometry类
             geom_type = geom.get_geometry_type().value
             if geom_type == MESHTYPE or geom_type == TETRATYPE:
                 empty_v = self.is_empty(len(geom.vertices))
@@ -34,6 +36,9 @@ class Metrics3D():
         if isinstance(geom, o3d.geometry.Geometry):
             geom_type = geom.get_geometry_type().value
             if geom_type == MESHTYPE or geom_type == TETRATYPE:
+                # ! 如果几何类型是网格（MESHTYPE）或四面体网格（TETRATYPE），
+                # ! 则通过 sample_points_uniformly 方法以均匀采样的方式从表面采样出1,000,000个点，生成点云。
+
                 geom_pcd = geom.sample_points_uniformly(1000000)
             elif geom_type == PCDTYPE:
                 geom_pcd = geom
@@ -49,6 +54,7 @@ class Metrics3D():
         else:
             assert False, '{} type not supported'.format(type(geom))
 
+        # ! 返回的是点云的数据格式
         return geom_pcd
 
     @staticmethod
@@ -60,7 +66,7 @@ class Metrics3D():
 
         input()
 
-class RMSE():
+class RMSE(): # * Root MSE
     def __init__(self):
         self.dists = []
 
